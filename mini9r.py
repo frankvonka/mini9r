@@ -15,11 +15,14 @@ ZEN_MODELS = "https://opencode.ai/zen/v1/models"
 TIMEOUT, COOLDOWN, MAX_BODY = 120, 600, 16 * 1024 * 1024
 UA, CLIENT = "opencode/1.18.31", "desktop"
 B62 = string.digits + string.ascii_letters
-CHAIN = ["space-bunny-free", "mimo-v2.6-flash-free", "mimo-v2.5-free",
+DEPRECATED = {"mimo-v2.5-free"}
+
+CHAIN = ["space-bunny-free", "mimo-v2.6-flash-free",
     "muse-spark-1.3-contributor-free", "muse-spark-1.2-contributor-free",
     "longcat-2.5-preview-free", "jev-1.13-free", "ling-3.0-flash-fin-free",
     "nemotron-3-ultra-free", "nemotron-3.5-lightning-free",
-    "deepseek-v4-flash-free", "big-pickle", "fledge-alpha-free", "ling-3.1-flash-free"]
+    "deepseek-v4-flash-free", "big-pickle", "fledge-alpha-free",
+    "ling-3.1-flash-free"]
 QUARTET = [{"type": "function", "function": {"name": n, "description": n,
     "parameters": {"type": "object", "properties": {}}}} for n in ("bash", "glob", "grep", "read")]
 cool: dict[str, float] = {}
@@ -262,7 +265,7 @@ def refresh():
     try:
         r = urllib.request.Request(ZEN_MODELS, headers=zh())
         with urllib.request.urlopen(r, timeout=30) as x:
-            ids = [m["id"] for m in json.load(x).get("data", []) if m.get("id")]
+            ids = [m["id"] for m in json.load(x).get("data", []) if m.get("id") and m["id"] not in DEPRECATED]
         fr = [i for i in ids if i.endswith("-free") or i == "big-pickle"]
         if fr: CHAIN = [m for m in CHAIN if m in fr] + [m for m in fr if m not in CHAIN]; log(f"chain: {len(fr)} free")
     except Exception as e: log(f"model list failed: {e}")
